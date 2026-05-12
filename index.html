@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de UTMs — Medipielsa</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f2f2f2;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 2.5rem 1rem;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 2.25rem 2.5rem;
+            width: 100%;
+            max-width: 740px;
+            box-shadow: 0 4px 28px rgba(0,0,0,0.09);
+        }
+
+        h1 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #111;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #ebebeb;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h1 span.badge {
+            font-size: 0.7rem;
+            background: #c9a96e;
+            color: #fff;
+            padding: 0.15rem 0.55rem;
+            border-radius: 20px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+
+        .field { margin-bottom: 1.35rem; }
+
+        label.lbl {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #777;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.4rem;
+        }
+
+        .sub-label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.3rem;
+        }
+
+        input[type="text"],
+        input[type="date"] {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border: 1.5px solid #ddd;
+            border-radius: 7px;
+            font-size: 0.95rem;
+            color: #111;
+            background: #fff;
+            transition: border-color 0.18s;
+        }
+
+        input[type="text"]:focus,
+        input[type="date"]:focus {
+            outline: none;
+            border-color: #c9a96e;
+        }
+
+        input[readonly] {
+            background: #f8f8f8;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        /* ── SELECT ── */
+        .select-wrap { position: relative; }
+
+        .select-wrap::after {
+            content: '';
+            pointer-events: none;
+            position: absolute;
+            right: 0.9rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0; height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 6px solid #aaa;
+        }
+
+        select {
+            width: 100%;
+            padding: 0.6rem 2.2rem 0.6rem 0.8rem;
+            border: 1.5px solid #ddd;
+            border-radius: 7px;
+            font-size: 0.95rem;
+            color: #111;
+            background: #fff;
+            appearance: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+            transition: border-color 0.18s;
+        }
+
+        select:focus { outline: none; border-color: #c9a96e; }
+
+        .extra-input { margin-top: 0.45rem; }
+
+        /* ── GRIDS ── */
+        .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
+        .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+        /* ── DATE TOGGLE ── */
+        .date-toggle { display: flex; gap: 0.4rem; margin-bottom: 0.75rem; }
+
+        .toggle-btn {
+            padding: 0.32rem 1rem;
+            border: 1.5px solid #ddd;
+            border-radius: 20px;
+            background: transparent;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #aaa;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .toggle-btn.active { background: #111; border-color: #111; color: #fff; }
+
+        /* ── PREVIEW ── */
+        .preview-box {
+            margin-top: 0.75rem;
+            padding: 0.6rem 0.85rem;
+            background: #f7f4ef;
+            border-radius: 7px;
+            font-size: 0.84rem;
+            color: #555;
+            word-break: break-all;
+            line-height: 1.5;
+        }
+
+        .preview-box b { color: #c9a96e; }
+
+        .hint { font-size: 0.76rem; color: #bbb; margin-top: 0.3rem; }
+
+        .divider { border: none; border-top: 1.5px solid #f0f0f0; margin: 1.5rem 0; }
+
+        /* ── BOTONES ── */
+        .btn-generar {
+            width: 100%;
+            padding: 0.8rem;
+            background: #111;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 0.25rem;
+        }
+
+        .btn-generar:hover { background: #333; }
+
+        .output-section { display: none; margin-top: 1.5rem; }
+        .output-section.visible { display: block; }
+
+        .output-url-box {
+            background: #f5f5f5;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 0.85rem;
+            font-size: 0.87rem;
+            word-break: break-all;
+            color: #111;
+            line-height: 1.6;
+            min-height: 3.2rem;
+        }
+
+        .output-actions { display: flex; gap: 0.6rem; margin-top: 0.6rem; }
+
+        .btn-copiar {
+            padding: 0.5rem 1.4rem;
+            background: #c9a96e;
+            color: #fff;
+            border: none;
+            border-radius: 7px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-copiar:hover { background: #b8966a; }
+        .btn-copiar.ok { background: #4caf50; }
+
+        .btn-limpiar {
+            padding: 0.5rem 1.1rem;
+            background: transparent;
+            color: #999;
+            border: 1.5px solid #ddd;
+            border-radius: 7px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-limpiar:hover { border-color: #bbb; color: #555; }
+
+        .hidden { display: none !important; }
+
+        /* ── TOAST ── */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #111;
+            color: #fff;
+            padding: 0.75rem 1.25rem;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+            opacity: 0;
+            transform: translateY(12px);
+            transition: opacity 0.25s, transform 0.25s;
+            pointer-events: none;
+            z-index: 9999;
+            max-width: 320px;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .toast .toast-icon {
+            width: 18px; height: 18px;
+            background: #4caf50;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            font-size: 0.7rem;
+        }
+
+        .toast .toast-bar {
+            position: absolute;
+            bottom: 0; left: 0;
+            height: 3px;
+            background: #c9a96e;
+            border-radius: 0 0 10px 10px;
+            width: 100%;
+            transform-origin: left;
+            animation: none;
+        }
+
+        .toast.show .toast-bar {
+            animation: toastBar 3s linear forwards;
+        }
+
+        @keyframes toastBar { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+        /* ── BANNER ID ── */
+        .banner-id-box {
+            background: #f0f4ff;
+            border: 1.5px solid #d0d9f0;
+            border-radius: 8px;
+            padding: 0.85rem;
+            font-size: 0.87rem;
+            word-break: break-all;
+            color: #111;
+            line-height: 1.6;
+            min-height: 2.6rem;
+        }
+
+        @media (max-width: 580px) {
+            .card { padding: 1.5rem 1.25rem; }
+            .row-3 { grid-template-columns: 1fr; }
+            .row-2 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>Generador de UTMs <span class="badge"></span></h1>
+
+    <!-- URL BASE -->
+    <div class="field">
+        <label class="lbl">URL Base</label>
+        <input type="text" id="url-base"
+            placeholder="Ej: /promociones  " />
+        <p class="hint">Si la URL ya tiene parámetros (map=, query=, etc.) pegala completa, los UTMs se agregan al final.</p>
+    </div>
+
+    <hr class="divider">
+
+    <!-- utmi_cp -->
+    <div class="field">
+        <label class="lbl">utmi_cp</label>
+        <input type="text" id="utmi-cp" value="visibilidadTarifario" readonly />
+    </div>
+
+    <!-- utmi_p -->
+    <div class="field">
+        <label class="lbl">utmi_p — Área de la página</label>
+        <div class="select-wrap">
+            <select id="sel-p" onchange="onSelectP()">
+                <option value="">— Selecciona —</option>
+                <option value="home-principal">home-principal</option>
+                <option value="home-skin">home-skin</option>
+                <option value="home">home</option>
+                <option value="descuentos">descuentos</option>
+                <option value="makeup">makeup</option>
+                <option value="buscador">buscador</option>
+                <option value="categoria">categoria</option>
+                <option value="banner">banner</option>
+                <option value="__otro__">Otro...</option>
+            </select>
+        </div>
+        <div id="wrap-p-custom" class="extra-input hidden">
+            <input type="text" id="txt-p-custom" placeholder="Escribí el valor de utmi_p" oninput="onCustomP()" />
+        </div>
+    </div>
+
+    <!-- utmi_pc -->
+    <div class="field">
+        <label class="lbl">utmi_pc — Identificador único</label>
+
+        <!-- Componente · Área · Campaña -->
+        <div class="row-3">
+            <div>
+                <span class="sub-label">Componente</span>
+                <div class="select-wrap">
+                    <select id="sel-comp" onchange="onSelectComp()">
+                        <option value="">— Seleccioná —</option>
+                        <option value="banner">banner</option>
+                        <option value="mini">mini</option>
+                        <option value="tablero">tablero</option>
+                        <option value="cuadrito-obsequio">cuadrito-obsequio</option>
+                        <option value="__otro__">Otro...</option>
+                    </select>
+                </div>
+                <div id="wrap-comp-custom" class="extra-input hidden">
+                    <input type="text" id="txt-comp-custom" placeholder="Escribí el componente" oninput="onCustomComp()" />
+                </div>
+            </div>
+            <div>
+                <span class="sub-label">Área (=utmi_p)</span>
+                <input type="text" id="pc-area" placeholder="Se completa solo" oninput="actualizarPreview()" />
+            </div>
+            <div>
+                <span class="sub-label">Campaña</span>
+                <input type="text" id="pc-camp" placeholder="Ej: madres, lanzamiento" oninput="actualizarPreview()" />
+            </div>
+        </div>
+
+        <!-- Fecha -->
+        <div style="margin-top:1rem;">
+            <span class="sub-label" style="margin-bottom:0.5rem;">Fecha</span>
+            <div class="date-toggle">
+                <button type="button" class="toggle-btn active" id="btn-solo-mes" onclick="setDateMode('mes')">Solo mes</button>
+                <button type="button" class="toggle-btn" id="btn-rango" onclick="setDateMode('rango')">Rango de días</button>
+                <button type="button" class="toggle-btn" id="btn-quincena" onclick="setDateMode('quincena')">Quincena</button>
+            </div>
+
+            <!-- Solo mes -->
+            <div id="date-mes" class="row-2">
+                <div>
+                    <span class="sub-label">Mes</span>
+                    <div class="select-wrap">
+                        <select id="sel-mes" onchange="actualizarPreview()">
+                            <option value="enero">Enero</option>
+                            <option value="febrero">Febrero</option>
+                            <option value="marzo">Marzo</option>
+                            <option value="abril">Abril</option>
+                            <option value="mayo">Mayo</option>
+                            <option value="junio">Junio</option>
+                            <option value="julio">Julio</option>
+                            <option value="agosto">Agosto</option>
+                            <option value="septiembre">Septiembre</option>
+                            <option value="octubre">Octubre</option>
+                            <option value="noviembre">Noviembre</option>
+                            <option value="diciembre">Diciembre</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <span class="sub-label">Año</span>
+                    <input type="text" id="txt-anio" oninput="actualizarPreview()" />
+                </div>
+            </div>
+
+            <!-- Rango de días -->
+            <div id="date-rango" class="row-2 hidden">
+                <div>
+                    <span class="sub-label">Desde</span>
+                    <input type="date" id="rango-desde" onchange="actualizarPreview()" />
+                </div>
+                <div>
+                    <span class="sub-label">Hasta</span>
+                    <input type="date" id="rango-hasta" onchange="actualizarPreview()" />
+                </div>
+            </div>
+
+            <!-- Quincena -->
+            <div id="date-quincena" class="row-2 hidden">
+                <div>
+                    <span class="sub-label">Quincena</span>
+                    <div class="select-wrap">
+                        <select id="sel-q" onchange="actualizarPreview()">
+                            <option value="1Q">1Q — Primera quincena</option>
+                            <option value="2Q">2Q — Segunda quincena</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <div class="row-2" style="gap:0.5rem">
+                        <div>
+                            <span class="sub-label">Mes</span>
+                            <div class="select-wrap">
+                                <select id="sel-q-mes" onchange="actualizarPreview()">
+                                    <option value="enero">Enero</option>
+                                    <option value="febrero">Febrero</option>
+                                    <option value="marzo">Marzo</option>
+                                    <option value="abril">Abril</option>
+                                    <option value="mayo">Mayo</option>
+                                    <option value="junio">Junio</option>
+                                    <option value="julio">Julio</option>
+                                    <option value="agosto">Agosto</option>
+                                    <option value="septiembre">Septiembre</option>
+                                    <option value="octubre">Octubre</option>
+                                    <option value="noviembre">Noviembre</option>
+                                    <option value="diciembre">Diciembre</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="sub-label">Año</span>
+                            <input type="text" id="txt-q-anio" oninput="actualizarPreview()" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview utmi_pc -->
+        <div class="preview-box">
+            utmi_pc: <b id="pc-preview">—</b>
+        </div>
+    </div>
+
+    <button class="btn-generar" onclick="generar()">Generar URL</button>
+
+    <!-- Output -->
+    <div class="output-section" id="output-section">
+        <hr class="divider">
+        <label class="lbl">URL con UTMs</label>
+        <div class="output-url-box" id="output-url"></div>
+        <div class="output-actions">
+            <button class="btn-copiar" id="btn-copiar" onclick="copiar('output-url','btn-copiar')">Copiar URL</button>
+            <button class="btn-limpiar" onclick="limpiar()">Limpiar</button>
+        </div>
+
+        <hr class="divider">
+        <label class="lbl">Banner ID <span style="color:#bbb;font-weight:400;text-transform:none;font-size:0.78rem">bannerID-{área}-{campaña}-{fecha}</span></label>
+        <div class="banner-id-box" id="output-banner-id"></div>
+        <div class="output-actions">
+            <button class="btn-copiar" id="btn-copiar-bid" onclick="copiar('output-banner-id','btn-copiar-bid')">Copiar Banner ID</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+    <span class="toast-icon">✓</span>
+    <span id="toast-msg">URL generada</span>
+    <div class="toast-bar"></div>
+</div>
+
+<script>
+    const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    const now   = new Date();
+    let dateMode = 'mes';
+
+    // Defaults fecha
+    document.getElementById('sel-mes').value    = MESES[now.getMonth()];
+    document.getElementById('txt-anio').value   = now.getFullYear();
+    document.getElementById('sel-q-mes').value  = MESES[now.getMonth()];
+    document.getElementById('txt-q-anio').value = now.getFullYear();
+
+    // ── Componente select ───────────────────────────────────────
+    function onSelectComp() {
+        const val = document.getElementById('sel-comp').value;
+        const wrap = document.getElementById('wrap-comp-custom');
+        if (val === '__otro__') {
+            wrap.classList.remove('hidden');
+            document.getElementById('txt-comp-custom').focus();
+        } else {
+            wrap.classList.add('hidden');
+            document.getElementById('txt-comp-custom').value = '';
+        }
+        actualizarPreview();
+    }
+
+    function onCustomComp() { actualizarPreview(); }
+
+    function getComp() {
+        const sel = document.getElementById('sel-comp').value;
+        if (sel === '__otro__') return document.getElementById('txt-comp-custom').value.trim();
+        return sel;
+    }
+
+    // ── utmi_p select ──────────────────────────────────────────
+    function onSelectP() {
+        const val = document.getElementById('sel-p').value;
+        const wrapCustom = document.getElementById('wrap-p-custom');
+        if (val === '__otro__') {
+            wrapCustom.classList.remove('hidden');
+            document.getElementById('txt-p-custom').focus();
+            document.getElementById('pc-area').value = '';
+        } else {
+            wrapCustom.classList.add('hidden');
+            document.getElementById('txt-p-custom').value = '';
+            document.getElementById('pc-area').value = val;
+        }
+        actualizarPreview();
+    }
+
+    function onCustomP() {
+        document.getElementById('pc-area').value = document.getElementById('txt-p-custom').value.trim();
+        actualizarPreview();
+    }
+
+    function getUtmiP() {
+        const sel = document.getElementById('sel-p').value;
+        if (sel === '__otro__') return document.getElementById('txt-p-custom').value.trim();
+        return sel;
+    }
+
+    // ── Modo de fecha ──────────────────────────────────────────
+    function setDateMode(mode) {
+        dateMode = mode;
+        document.getElementById('btn-solo-mes').classList.toggle('active',  mode === 'mes');
+        document.getElementById('btn-rango').classList.toggle('active',     mode === 'rango');
+        document.getElementById('btn-quincena').classList.toggle('active',  mode === 'quincena');
+        document.getElementById('date-mes').classList.toggle('hidden',      mode !== 'mes');
+        document.getElementById('date-rango').classList.toggle('hidden',    mode !== 'rango');
+        document.getElementById('date-quincena').classList.toggle('hidden', mode !== 'quincena');
+        actualizarPreview();
+    }
+
+    // ── Parte de fecha ─────────────────────────────────────────
+    function getFecha() {
+        if (dateMode === 'mes') {
+            const mes  = document.getElementById('sel-mes').value;
+            const anio = document.getElementById('txt-anio').value.trim();
+            return [mes, anio].filter(Boolean).join('-');
+        }
+        if (dateMode === 'quincena') {
+            const q    = document.getElementById('sel-q').value;
+            const mes  = document.getElementById('sel-q-mes').value;
+            const anio = document.getElementById('txt-q-anio').value.trim();
+            return [q, mes, anio].filter(Boolean).join('-');
+        }
+        const desde = document.getElementById('rango-desde').value;
+        const hasta = document.getElementById('rango-hasta').value;
+        if (!desde && !hasta) return '';
+        if (desde && !hasta) {
+            const d = new Date(desde + 'T00:00:00');
+            return `${d.getDate()}-${MESES[d.getMonth()]}-${d.getFullYear()}`;
+        }
+        const d1 = new Date(desde + 'T00:00:00');
+        const d2 = new Date(hasta + 'T00:00:00');
+        return `${d1.getDate()}-${d2.getDate()}-${MESES[d1.getMonth()]}-${d1.getFullYear()}`;
+    }
+
+    // ── Preview en vivo ────────────────────────────────────────
+    function actualizarPreview() {
+        const comp  = getComp();
+        const area  = document.getElementById('pc-area').value.trim();
+        const camp  = document.getElementById('pc-camp').value.trim();
+        const fecha = getFecha();
+        const parts = [comp, area, camp, fecha].filter(Boolean);
+        document.getElementById('pc-preview').textContent = parts.length ? parts.join('-') : '—';
+    }
+
+    // ── Banner ID ──────────────────────────────────────────────
+    function getBannerId() {
+        const area  = document.getElementById('pc-area').value.trim();
+        const camp  = document.getElementById('pc-camp').value.trim();
+        const fecha = getFecha();
+        const parts = ['bannerID', area, camp, fecha].filter(Boolean);
+        return parts.join('-');
+    }
+
+    // ── Generar ────────────────────────────────────────────────
+    function generar() {
+        const base = document.getElementById('url-base').value.trim();
+        const p    = getUtmiP();
+        const pc   = document.getElementById('pc-preview').textContent;
+
+        if (!base)             { alert('Completá la URL base.'); return; }
+        if (!p)                { alert('Seleccioná o escribí el valor de utmi_p.'); return; }
+        if (pc === '—' || !pc) { alert('Completá al menos un campo del utmi_pc.'); return; }
+
+        const sep = base.includes('?') ? '&' : '?';
+        const url = `${base}${sep}utmi_cp=visibilidadTarifario&utmi_p=${p}&utmi_pc=${pc}`;
+
+        document.getElementById('output-url').textContent = url;
+        document.getElementById('output-banner-id').textContent = getBannerId();
+
+        const section = document.getElementById('output-section');
+        section.classList.add('visible');
+        section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        ['btn-copiar','btn-copiar-bid'].forEach(id => {
+            const b = document.getElementById(id);
+            b.textContent = id === 'btn-copiar' ? 'Copiar URL' : 'Copiar Banner ID';
+            b.classList.remove('ok');
+        });
+
+        mostrarToast('¡URL generada correctamente!');
+    }
+
+    // ── Toast ──────────────────────────────────────────────────
+    let toastTimer;
+    function mostrarToast(msg) {
+        const t = document.getElementById('toast');
+        document.getElementById('toast-msg').textContent = msg;
+        t.classList.remove('show');
+        clearTimeout(toastTimer);
+        // force reflow to restart animation
+        void t.offsetWidth;
+        t.classList.add('show');
+        toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+    }
+
+    // ── Copiar ─────────────────────────────────────────────────
+    function copiar(sourceId, btnId) {
+        const text = document.getElementById(sourceId).textContent;
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.getElementById(btnId);
+            const original = btn.textContent;
+            btn.textContent = '¡Copiado!';
+            btn.classList.add('ok');
+            setTimeout(() => { btn.textContent = original; btn.classList.remove('ok'); }, 2200);
+        });
+    }
+
+    // ── Limpiar ────────────────────────────────────────────────
+    function limpiar() {
+        document.getElementById('url-base').value      = '';
+        document.getElementById('sel-p').value         = '';
+        document.getElementById('txt-p-custom').value  = '';
+        document.getElementById('wrap-p-custom').classList.add('hidden');
+        document.getElementById('sel-comp').value        = '';
+        document.getElementById('txt-comp-custom').value  = '';
+        document.getElementById('wrap-comp-custom').classList.add('hidden');
+        document.getElementById('pc-area').value           = '';
+        document.getElementById('pc-camp').value       = '';
+        document.getElementById('rango-desde').value   = '';
+        document.getElementById('rango-hasta').value   = '';
+        document.getElementById('sel-mes').value       = MESES[now.getMonth()];
+        document.getElementById('txt-anio').value      = now.getFullYear();
+        document.getElementById('sel-q-mes').value     = MESES[now.getMonth()];
+        document.getElementById('txt-q-anio').value    = now.getFullYear();
+        setDateMode('mes');
+        actualizarPreview();
+        document.getElementById('output-url').textContent       = '';
+        document.getElementById('output-banner-id').textContent = '';
+        document.getElementById('output-section').classList.remove('visible');
+    }
+</script>
+
+</body>
+</html>
